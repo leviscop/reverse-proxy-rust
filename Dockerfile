@@ -9,4 +9,4 @@ RUN cargo build --release
 
 EXPOSE 8000
 # Run the binary
-
+ENTRYPOINT ["/target/release/reverse_proxy"]
