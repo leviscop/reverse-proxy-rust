@@ -1,19 +1,27 @@
 version: '3.1'
 
 services:
-  nginx:
-    image: nginx:latest
-    volumes:
-      - ./nginx/proxy.conf:/etc/nginx/conf.d/proxy.template
-      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
-    ports:
-      - "8080:80"
-    command: 'bash -c "cat /etc/nginx/conf.d/proxy.template > /etc/nginx/conf.d/default.conf && nginx -g ''daemon off;''"'
   reverse-proxy:
+    image: ghcr.io/leviscop/reverse-proxy-rust:main
+    container_name: example_com
+    labels:
+      - traefik.enable=true
+      - traefik.http.services.example_com.loadbalancer.server.port=8000
+      - traefik.http.routers.example_com.rule=Host(`example.com`)
+      - traefik.http.routers.example_com.entrypoints=web
+      - traefik.http.routers.example_com.middlewares=example_com-https
+      - traefik.http.middlewares.example_com-https.redirectscheme.scheme=https
+      - traefik.http.routers.example_com-secure.rule=Host(`example.com`)
+      - traefik.http.routers.example_com-secure.entrypoints=websecure
+      - traefik.http.routers.example_com-secure.service=example_com
+      - traefik.http.routers.example_com-secure.tls=true
+      - traefik.http.routers.example_com-secure.tls.certresolver=letsencrypt
+      - traefik.docker.network=gateway
     volumes:
-      - ./.env:/.env
-    build: .
-    ports:
-      - "8000:8000"
-    entrypoint: "./target/release/reverse_proxy"
-    # command: 
+      - volume/reverse-proxy/example_com/.env:/.env
+    networks:
+      - gateway
+
+networks:
+  gateway:
+    external: true
