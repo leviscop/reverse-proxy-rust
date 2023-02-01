@@ -225,7 +225,7 @@ async fn update_cache(msg: &UriCacheUpdateMessage) -> bool {
         FinishFetchingWithSuccess(uri, update_cache_entry) => {
             debug_println!("FinishFetchingWithSuccess: {uri}");
 
-            if (uri_cache.get(uri).is_none()) {
+            if uri_cache.get(uri).is_none() {
                 return false;
             }
             let current_item = uri_cache.get(uri).unwrap();
@@ -245,7 +245,7 @@ async fn update_cache(msg: &UriCacheUpdateMessage) -> bool {
         FinishFetchingWithError(uri) => {
             debug_println!("FinishFetchingWithError: {uri}");
 
-            if (uri_cache.get(uri).is_none()) {
+            if uri_cache.get(uri).is_none() {
                 return false;
             }
 
