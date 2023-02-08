@@ -10,6 +10,8 @@ RUN cargo build --release
 
 FROM debian:buster-slim
 
+RUN apt update && apt install -y openssl
+
 WORKDIR /app
 
 COPY --from=builder /app/target/release/reverse_proxy ./
