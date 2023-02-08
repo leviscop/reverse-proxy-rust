@@ -1,12 +1,21 @@
-# 1. This tells docker to use the Rust official image
-FROM rust:latest
+FROM rust:latest AS builder
 
-# 2. Copy the files in your machine to the Docker image
+RUN rustup target add x86_64-unknown-linux-musl
+RUN apt update && apt install -y musl-tools musl-dev
+RUN update-ca-certificates
+
+WORKDIR /reverse_proxy
+
 COPY ./ ./
 
-# Build your program for release
-RUN cargo build --release
+RUN cargo build --target x86_64-unknown-linux-musl --release
+
+FROM alpine
+
+WORKDIR /reverse_proxy
+
+COPY --from=builder /reverse_proxy/target/x86_64-unknown-linux-musl/release/reverse_proxy ./
 
 EXPOSE 8000
-# Run the binary
-ENTRYPOINT ["/target/release/reverse_proxy"]
+
+ENTRYPOINT ["/reverse_proxy/reverse_proxy"]
